@@ -7,9 +7,11 @@ from yolo_net import SeaCrapNet
 import asyncio
 import logging
 
+# BOT_API = '7976452257:AAHkwBawzsKpGUWYXXnrzcNO14TGtE7n2lk'
+
 class Telegram_bot:
     def __init__(self):
-        self.api = environ.get("BOT_API")
+        self.api = '7976452257:AAHkwBawzsKpGUWYXXnrzcNO14TGtE7n2lk'
         self.model = SeaCrapNet()
         self.queue = Queue()
         
@@ -43,6 +45,14 @@ class Telegram_bot:
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self.model.pipeline, file_name)
         await context.bot.send_photo(chat_id=update.message.chat_id, photo=file_name)
+        # context.bot.send_text()
+        msg = 'Найденный мусор по классам:\n\n'
+        for class_, amount in self.model.detected.items():
+            if amount > 0:
+                msg = msg + f'{class_}: {amount}\n'
+        if msg == 'Найденный мусор по классам:\n\n':
+            msg = 'Мусор не найден'
+        await context.bot.send_message(chat_id=update.message.chat_id, text=msg)
         remove(file_name)
         
         
